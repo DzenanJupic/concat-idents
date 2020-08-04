@@ -1,0 +1,41 @@
+error: Expected ident
+ --> $DIR/fail.rs:3:26
+  |
+3 | concat_idents!(fn_name = 1, foo, bar, {
+  |                          ^
+
+error: Expected ident
+ --> $DIR/fail.rs:9:26
+  |
+9 | concat_idents!(fn_name = true {
+  |                          ^^^^
+
+error: Expected ident
+  --> $DIR/fail.rs:15:26
+   |
+15 | concat_idents!(fn_name = struct {
+   |                          ^^^^^^
+
+error: Expected ident
+  --> $DIR/fail.rs:21:26
+   |
+21 | concat_idents!(fn_name = 1 {
+   |                          ^
+
+error: Expected ident
+  --> $DIR/fail.rs:27:31
+   |
+27 | concat_idents!(fn_name = foo, 1.0 {
+   |                               ^^^
+
+error: Expected ident
+  --> $DIR/fail.rs:33:31
+   |
+33 | concat_idents!(fn_name = foo, "bar" {
+   |                               ^^^^^
+
+error: Expected ident
+  --> $DIR/fail.rs:42:27
+   |
+42 | concat_idents!(fn_name =  {
+   |                           ^
