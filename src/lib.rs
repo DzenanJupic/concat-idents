@@ -18,6 +18,19 @@ mod tests {
     }
 }
 
+/// A helper struct that implements [`Parse`] and extracts the `replace_ident`, the `concatenated_ident` and
+/// the code `block` from the original macro input
+/// ```text
+/// concat_idents!(
+///     ident = ident1, _, ident2 { /* code */ }
+///     ^^^^^   ^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^
+///     |       |                 code block
+///     |       |
+///     |       concatenated-ident (in this case: 'ident1_ident2')
+///     |
+///     replace-ident
+/// );
+/// ```
 struct InputParser {
     replace_ident: Ident,
     concatenated_ident: Ident,
@@ -39,6 +52,12 @@ impl Parse for InputParser {
     }
 }
 
+/// A helper struct that implements [`Parse`] and makes one [`Ident`] from a comma separated list
+/// of idents, literals and underscores
+/// ```text
+/// ident1, ident2, _, 3, _, true
+/// => ident1ident2_3_true
+/// ```
 struct IdentParser(Ident);
 
 impl Parse for IdentParser {
@@ -79,6 +98,8 @@ impl Parse for IdentParser {
     }
 }
 
+/// A helper function that is used by [`IdentParser::parse`]
+/// Is responsible for extracting all idents, except for the first.
 fn parse_ident(parse_stream: ParseStream, ident: &mut Ident) -> parse::Result<bool> {
     if parse_stream.peek(Token![,]) {
         let _: Token![,] = parse_stream.parse()?;
@@ -107,6 +128,8 @@ fn parse_ident(parse_stream: ParseStream, ident: &mut Ident) -> parse::Result<bo
     Ok(true)
 }
 
+/// A helper struct that implements [`VisitMut`] and is responsible for replacing the `replace_ident`
+/// with the `concatenated_ident`.
 struct IdentReplacer {
     replace_ident: Ident,
     concatenated_ident: Ident,
@@ -123,14 +146,55 @@ impl VisitMut for IdentReplacer {
     }
 }
 
-/// # Basic usage:
-///     concat_idents!(
-///         <IDENT> = ident1, ident2, ident3, ... {
-///             fn <IDENT>() {
-///                 /* some code */
-///             }
-///         }
-///     );
+/// This macros makes it possible to concatenate identifiers at compile time and use them as normal.
+/// It's an extension/replacement of `std::concat_idents`, since in comprassion to the std-solution,
+/// the idents here can be used everywhere.
+///
+/// # Usage:
+/// ### Basic usage
+/// ```
+/// use concat_idents::concat_idents;
+///
+/// concat_idents!(fn_name = foo, _, bar {
+///        fn fn_name() {
+///            // --snip--
+///        }
+/// });
+///
+/// foo_bar();
+/// ```
+///
+/// ### Generating Tests
+/// ```
+///# use concat_idents::concat_idents;
+///# use std::ops::{Add, Sub};
+/// macro_rules! generate_test {
+///    ($method:ident($lhs:ident, $rhs:ident)) => {
+///        concat_idents!(test_name = $method, _, $lhs, _, $rhs {
+///            #[test]
+///            fn test_name() {
+///                let _ = $lhs::default().$method($rhs::default());
+///            }
+///        });
+///    };
+/// }
+///
+/// #[derive(Default)]
+/// struct S(i32);
+/// impl Add<i32> for S {
+///    // --snip--
+///#    type Output = S;
+///#    fn add(self,rhs: i32) -> Self::Output { S(self.0 + rhs) }
+/// }
+/// impl Sub<i32> for S {
+///    // --snip--
+///#    type Output = S;
+///#    fn sub(self,rhs: i32) -> Self::Output { S(self.0 - rhs) }
+/// }
+///
+/// generate_test!(add(S, i32));
+/// generate_test!(sub(S, i32));
+/// ```
 #[proc_macro]
 pub fn concat_idents(item: TokenStream) -> TokenStream {
     let mut parsed_input = parse_macro_input!(item as InputParser);

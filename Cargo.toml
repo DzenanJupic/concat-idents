@@ -2,6 +2,10 @@
 name = "concat-idents"
 version = "1.0.0"
 authors = ["Dzenan Jupic <info@dzenanjupic.de>"]
+license = "MIT"
+description = "Allows concatenating multiple identifiers and using them everywhere"
+repository = "https://github.com/DzenanJupic/concat-idents"
+readme = "README.md"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
