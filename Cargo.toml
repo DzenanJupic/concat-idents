@@ -7,6 +7,14 @@ description = "Allows concatenating multiple identifiers and using them everywhe
 repository = "https://github.com/DzenanJupic/concat-idents"
 readme = "README.md"
 edition = "2018"
+include = [
+    "src/*.rs",
+    "tests/*.rs",
+    "tests/*.stderr",
+    "Cargo.toml",
+    "README.md",
+    "LICENSE"
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
