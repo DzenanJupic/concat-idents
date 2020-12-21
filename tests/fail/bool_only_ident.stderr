@@ -1,0 +1,5 @@
+error: Identifies cannot consist of only one bool
+ --> $DIR/bool_only_ident.rs:1:41
+  |
+1 | concat_idents::concat_idents!(fn_name = true {
+  |                                         ^^^^

@@ -1,0 +1,6 @@
+error: Expected either an identifies, a `_`, an int, a bool, a string-literal, or a character-literal.
+Note: To create an Identifies from a reserved keywords like `struct`, or `return`, wrap it quotes, i.e. `"struct"`, or escape them with `r#`, i.e. `r#struct` .
+ --> $DIR/reserved_keyword_without_quotes.rs:1:41
+  |
+1 | concat_idents::concat_idents!(fn_name = struct {
+  |                                         ^^^^^^

@@ -1,0 +1,5 @@
+error: Identifiers cannot contain floats
+ --> $DIR/float_in_ident.rs:1:46
+  |
+1 | concat_idents::concat_idents!(fn_name = foo, 1.0 {
+  |                                              ^^^

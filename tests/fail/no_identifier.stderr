@@ -1,0 +1,5 @@
+error: Expected at least one identifier
+ --> $DIR/no_identifier.rs:1:42
+  |
+1 | concat_idents::concat_idents!(fn_name =  {
+  |                                          ^

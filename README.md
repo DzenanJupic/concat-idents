@@ -4,6 +4,7 @@ This crate provides a single, easy to use macro.
 ## Usage
 
 ### Basic usage
+
  ```rust
  use concat_idents::concat_idents;
 

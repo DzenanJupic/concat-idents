@@ -1,0 +1,10 @@
+error: expected identifier, found keyword `struct`
+ --> $DIR/reserved_keyword_only_with_quotes.rs:1:41
+  |
+1 | concat_idents::concat_idents!(fn_name = "struct" {
+  |                                         ^^^^^^^^ expected identifier, found keyword
+  |
+help: you can escape reserved keywords to use them as identifiers
+  |
+1 | concat_idents::concat_idents!(fn_name = r#struct {
+  |                                         ^^^^^^^^

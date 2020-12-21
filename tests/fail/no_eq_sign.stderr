@@ -1,0 +1,5 @@
+error: expected `=`
+ --> $DIR/no_eq_sign.rs:1:39
+  |
+1 | concat_idents::concat_idents!(fn_name no_eq {
+  |                                       ^^^^^

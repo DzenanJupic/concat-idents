@@ -1,0 +1,9 @@
+error: unexpected end of input, expected curly braces
+ --> $DIR/no code block.rs:1:1
+  |
+1 | / concat_idents::concat_idents!(fn_name = no_code
+2 | |     /* there must be a code block */
+3 | | );
+  | |__^
+  |
+  = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
