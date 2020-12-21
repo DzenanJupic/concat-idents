@@ -1,6 +1,6 @@
 [package]
 name = "concat-idents"
-version = "1.0.0"
+version = "1.1.0"
 authors = ["Dzenan Jupic <info@dzenanjupic.de>"]
 license = "MIT"
 description = "Allows concatenating multiple identifiers and using them everywhere"
@@ -11,19 +11,19 @@ include = [
     "src/*.rs",
     "tests/*.rs",
     "tests/*.stderr",
+    "tests/fail/*.rs",
+    "tests/fail/*.stderr",
     "Cargo.toml",
     "README.md",
     "LICENSE"
 ]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [lib]
 proc-macro = true
 
 [dependencies]
-syn = { version = "1.0.30", features = ["full", "visit-mut"] }
-quote = "1.0.6"
+syn = { version = "1.0.55", features = ["full", "visit-mut"] }
+quote = "1.0.8"
 
 [dev-dependencies]
-trybuild = "1.0.31"
+trybuild = "1.0.38"

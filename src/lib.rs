@@ -2,10 +2,14 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 
-use quote::{format_ident, ToTokens};
 use quote::quote;
-use syn::{Block, Ident, Lit, parse_macro_input, Token, visit_mut};
+use syn::{
+    Block, Ident, LitBool, LitByte, LitByteStr,
+    LitChar, LitFloat, LitInt, LitStr, parse_macro_input, Token, visit_mut,
+};
 use syn::parse::{self, Parse, ParseStream};
+use syn::spanned::Spanned;
+use syn::token::Underscore;
 use syn::visit_mut::VisitMut;
 
 #[cfg(test)]
@@ -14,7 +18,7 @@ mod tests {
     fn test() {
         let t = trybuild::TestCases::new();
         t.pass("tests/pass.rs");
-        t.compile_fail("tests/fail.rs");
+        t.compile_fail("tests/fail/*.rs");
     }
 }
 
@@ -62,70 +66,123 @@ struct IdentParser(Ident);
 
 impl Parse for IdentParser {
     fn parse(input: ParseStream) -> parse::Result<Self> {
-        let mut ident: Ident = if input.peek(Ident) {
-            input.parse()?
-        } else if input.peek(Token![_]) {
-            Ident::from(input.parse::<Token![_]>()?)
-        } else if input.peek(Lit) {
-            let lit: Lit = input.parse()?;
-            if !input.peek(Token![,]) {
-                return Err(syn::Error::new(lit.span(), "Expected ident"));
-            }
-            if let Lit::Bool(bool_) = lit {
-                let bool_ = bool_.to_token_stream().to_string();
-                let _: Token![,] = input.parse()?;
-                if input.peek(Lit) {
-                    let lit: Lit = input.parse()?;
-                    match lit {
-                        Lit::Int(i) => format_ident!("{}{}", bool_, i.to_string()),
-                        Lit::Bool(b) => format_ident!("{}{}", bool_, b.into_token_stream().to_string()),
-                        _ => return Err(syn::Error::new(lit.span(), "Expected ident"))
-                    }
-                } else {
-                    let Self(ident) = Self::parse(input)?;
-                    return Ok(Self(format_ident!("{}{}", bool_, ident)));
-                }
+        let mut ident_parts = vec![];
+
+        while !input.peek(syn::token::Brace) {
+            ident_parts.push(IdentPart::parse(input)?);
+
+            if input.peek(Token![,]) {
+                input.parse::<Token![,]>()?;
             } else {
-                return Err(syn::Error::new(lit.span(), "Expected ident"));
+                break;
             }
-        } else {
-            return Err(syn::Error::new(input.span(), "Expected ident"));
+        }
+
+        let span = match ident_parts.first() {
+            Some(IdentPart::Ident(i)) => i.span(),
+            Some(IdentPart::Underscore(u)) => u.span(),
+            Some(IdentPart::Str(s)) => s.span(),
+            Some(IdentPart::Char(c)) => c.span(),
+            Some(IdentPart::Bool(b)) if ident_parts.len() > 1 => b.span(),
+
+            Some(IdentPart::Bool(b)) => return Err(syn::Error::new(
+                b.span(),
+                "Identifies cannot consist of only one bool",
+            )),
+            Some(IdentPart::Int(i)) if ident_parts.len() > 1 => return Err(syn::Error::new(
+                i.span(),
+                "Identifies cannot start with integers",
+            )),
+            Some(IdentPart::Int(i)) => return Err(syn::Error::new(
+                i.span(),
+                "Identifies cannot start nor consist only of integers with integers",
+            )),
+            None => return Err(syn::Error::new(
+                input.span(),
+                "Expected at least one identifier",
+            ))
         };
 
-        while parse_ident(input, &mut ident)? {}
+        let mut ident = String::new();
 
-        Ok(Self(ident))
+        for part in ident_parts {
+            match part {
+                IdentPart::Ident(i) => ident.push_str(i.to_string().trim_start_matches("r#")),
+                IdentPart::Underscore(_) => ident.push('_'),
+                IdentPart::Int(i) => ident.push_str(i.to_string().as_str()),
+                IdentPart::Bool(b) => ident.push_str(b.value.to_string().as_str()),
+                IdentPart::Str(s) => ident.push_str(s.value().as_str()),
+                IdentPart::Char(c) => ident.push(c.value())
+            }
+        }
+
+        Ok(Self(Ident::new(ident.as_str(), span)))
     }
 }
 
-/// A helper function that is used by [`IdentParser::parse`]
-/// Is responsible for extracting all idents, except for the first.
-fn parse_ident(parse_stream: ParseStream, ident: &mut Ident) -> parse::Result<bool> {
-    if parse_stream.peek(Token![,]) {
-        let _: Token![,] = parse_stream.parse()?;
-    }
+/// A helper struct, that represents a valid part of an identifier. Does not guarantee, that
+/// this specific part is a fully qualified identifier.
+/// 
+/// ```text
+/// ident1, ident2, _, 3, _, true
+/// => ident1, ident2, _, 3, _, true
+/// ```
+enum IdentPart {
+    Underscore(Underscore),
+    Ident(Ident),
+    Int(LitInt),
+    Bool(LitBool),
+    Str(LitStr),
+    Char(LitChar),
+}
 
-    if parse_stream.peek(Ident) {
-        let next_ident: Ident = parse_stream.parse()?;
-        *ident = format_ident!("{}{}", ident, next_ident);
-    } else if parse_stream.peek(Token![_]) {
-        let _: Token![_] = parse_stream.parse()?;
-        *ident = format_ident!("{}_", ident);
-    } else if parse_stream.peek(Lit) {
-        let lit: Lit = parse_stream.parse()?;
-        match lit {
-            Lit::Int(i) => *ident = format_ident!("{}{}", ident, i.to_string()),
-            Lit::Bool(b) => *ident = format_ident!("{}{}", ident, b.into_token_stream().to_string()),
-            _ => return Err(syn::Error::new(lit.span(), "Expected ident"))
+impl Parse for IdentPart {
+    fn parse(input: ParseStream) -> parse::Result<Self> {
+        if input.peek(Ident) {
+            Ok(Self::Ident(input.parse()?))
+        } else if input.peek(Token![_]) {
+            Ok(Self::Underscore(input.parse()?))
+        } else if input.peek(LitInt) {
+            Ok(Self::Int(input.parse()?))
+        } else if input.peek(LitBool) {
+            Ok(Self::Bool(input.parse()?))
+        } else if input.peek(LitStr) {
+            let string = input.parse::<LitStr>()?;
+            if string.value().contains(|c: char| !c.is_ascii_alphanumeric() && c != '_') {
+                Err(syn::Error::new(
+                    string.span(),
+                    "string literals can only contain [a-zA-Z0-9_]",
+                ))
+            } else {
+                Ok(Self::Str(string))
+            }
+        } else if input.peek(LitChar) {
+            let char = input.parse::<LitChar>()?;
+            let c = char.value();
+            if !c.is_ascii_alphanumeric() && c != '_' {
+                Err(syn::Error::new(
+                    char.span(),
+                    "character literals can only contain [a-zA-Z0-9_]",
+                ))
+            } else {
+                Ok(Self::Char(char))
+            }
+        } else if input.peek(LitByteStr) {
+            Err(syn::Error::new(input.span(), "Identifiers cannot contain byte string"))
+        } else if input.peek(LitByte) {
+            Err(syn::Error::new(input.span(), "Identifiers cannot contain bytes"))
+        } else if input.peek(LitFloat) {
+            Err(syn::Error::new(input.span(), "Identifiers cannot contain floats"))
+        } else {
+            Err(syn::Error::new(
+                input.span(),
+                "Expected either an identifies, a `_`, an int, a bool, \
+                 a string-literal, or a character-literal.\n\
+                 Note: To create an Identifies from a reserved keywords like `struct`, or `return`, \
+                 wrap it quotes, i.e. `\"struct\"`, or escape them with `r#`, i.e. `r#struct` .",
+            ))
         }
-    } else {
-        if parse_stream.peek(Token![,]) {
-            let _: Token![,] = parse_stream.parse()?;
-        }
-        return Ok(false);
     }
-
-    Ok(true)
 }
 
 /// A helper struct that implements [`VisitMut`] and is responsible for replacing the `replace_ident`
@@ -133,6 +190,35 @@ fn parse_ident(parse_stream: ParseStream, ident: &mut Ident) -> parse::Result<bo
 struct IdentReplacer {
     replace_ident: Ident,
     concatenated_ident: Ident,
+    code_block: Option<Block>,
+}
+
+impl IdentReplacer {
+    /// Creates a new Instance of IdentReplacer from an InputParser
+    fn from_input_parser(input_parser: InputParser) -> Self {
+        Self {
+            replace_ident: input_parser.replace_ident,
+            concatenated_ident: input_parser.concatenated_ident,
+            code_block: Some(input_parser.block),
+        }
+    }
+
+    /// Replaces all `replace_idents` in the `code_block` with the `concatenated_ident`
+    fn replace_idents(mut self) -> Self {
+        let mut code = self.code_block
+            .take()
+            .unwrap();
+        self.visit_block_mut(&mut code);
+        self.code_block = Some(code);
+
+        self
+    }
+
+    /// generates a TokenStream from the code-block
+    fn produce_token_stream(self) -> TokenStream {
+        let statements = self.code_block.unwrap().stmts;
+        (quote! { #( #statements )* }).into()
+    }
 }
 
 impl VisitMut for IdentReplacer {
@@ -197,14 +283,9 @@ impl VisitMut for IdentReplacer {
 /// ```
 #[proc_macro]
 pub fn concat_idents(item: TokenStream) -> TokenStream {
-    let mut parsed_input = parse_macro_input!(item as InputParser);
+    let input_parser = parse_macro_input!(item as InputParser);
 
-    let mut ident_replacer = IdentReplacer {
-        replace_ident: parsed_input.replace_ident,
-        concatenated_ident: parsed_input.concatenated_ident,
-    };
-    ident_replacer.visit_block_mut(&mut parsed_input.block);
-
-    let statements = parsed_input.block.stmts;
-    (quote! { #( #statements )* }).into()
+    IdentReplacer::from_input_parser(input_parser)
+        .replace_idents()
+        .produce_token_stream()
 }

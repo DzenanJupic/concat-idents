@@ -1,5 +1,5 @@
 # concat-idents!
-This crate provides a single, easy to use macro
+This crate provides a single, easy to use macro.
 
 ## Usage
 
@@ -16,7 +16,21 @@ This crate provides a single, easy to use macro
  foo_bar();
  ```
 
+### Allowed identifier parts
+
+```rust
+concat_idents!(fn_name = _, _ { /* underscores */ });
+concat_idents!(fn_name = foo, bar { /* identifiers */ });
+concat_idents!(fn_name = "foo", "bar" { /* strings */ });
+concat_idents!(fn_name = 'f', 'o', 'o' { /* characters */ });
+concat_idents!(fn_name = foo, 1, bar, 2 { /* integers */ });
+concat_idents!(fn_name = true, false { /* booleans */ });
+concat_idents!(fn_name = "enum", bar { /* quoted reserved keywords (recommended way) */ });
+concat_idents!(fn_name = r#struct, bar { /* escaped reserved keywords (not recommended, since some keywords produce error) */ });
+```
+
 ### Generating Tests
+
 ```rust
 macro_rules! generate_test {
    ($method:ident($lhs:ident, $rhs:ident)) => {
@@ -49,17 +63,25 @@ generate_test!(sub(S, i32));
 ## Error
 This macro will throw a compile error, if:
 1. an unexpected syntax is passed
+
 ```rust
 concat_idents!({});
 concat_idents!(ident {});
+concat_idents!(ident =  {});
+concat_idents!(= foo, bar {});
 concat_idents!(ident = foo, bar);
 ...
 ``` 
 2. one of the identifiers is invalid
+
 ```rust
-concat_idents!(ident = true {});
-concat_idents!(ident = 1 {});
-concat_idents!(ident = foo, 1.0 {});
-concat_idents!(ident =  {});
+concat_idents!(ident = true {});        // identifiers cannot consist of only one bool 
+concat_idents!(ident = 1 {});           // identifiers cannot consist of only one int
+concat_idents!(ident = 1, foo {});      // identifiers cannot start with an int
+concat_idents!(ident = foo, 1.0 {});    // identifiers cannot contain floats
+concat_idents!(ident = "enum");         // identifiers cannot consist of only one reserved keyword
+concat_idents!(ident = r#struct);       // identifiers cannot consist of only one reserved keyword
+concat_idents!(ident = " space");       // identifiers cannot contain spaces
+concat_idents!(ident = "foo-bar🧨");    // identifiers can only contain [a-zA-Z0-9_]
 ...
 ``` 
