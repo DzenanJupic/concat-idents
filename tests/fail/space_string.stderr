@@ -1,4 +1,4 @@
-error: string literals can only contain [a-zA-Z0-9_]
+error: Identifier parts can only contain [a-zA-Z0-9_]
  --> $DIR/space_string.rs:1:41
   |
 1 | concat_idents::concat_idents!(fn_name = " ", name {

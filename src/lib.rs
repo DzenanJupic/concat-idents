@@ -87,15 +87,15 @@ impl Parse for IdentParser {
 
             Some(IdentPart::Bool(b)) => return Err(syn::Error::new(
                 b.span(),
-                "Identifies cannot consist of only one bool",
+                "Identifiers cannot consist of only one bool",
             )),
             Some(IdentPart::Int(i)) if ident_parts.len() > 1 => return Err(syn::Error::new(
                 i.span(),
-                "Identifies cannot start with integers",
+                "Identifiers cannot start with integers",
             )),
             Some(IdentPart::Int(i)) => return Err(syn::Error::new(
                 i.span(),
-                "Identifies cannot start nor consist only of integers with integers",
+                "Identifiers cannot start nor consist only of integers with integers",
             )),
             None => return Err(syn::Error::new(
                 input.span(),
@@ -151,7 +151,7 @@ impl Parse for IdentPart {
             if string.value().contains(|c: char| !c.is_ascii_alphanumeric() && c != '_') {
                 Err(syn::Error::new(
                     string.span(),
-                    "string literals can only contain [a-zA-Z0-9_]",
+                    "Identifier parts can only contain [a-zA-Z0-9_]",
                 ))
             } else {
                 Ok(Self::Str(string))
@@ -162,7 +162,7 @@ impl Parse for IdentPart {
             if !c.is_ascii_alphanumeric() && c != '_' {
                 Err(syn::Error::new(
                     char.span(),
-                    "character literals can only contain [a-zA-Z0-9_]",
+                    "Identifier parts can only contain [a-zA-Z0-9_]",
                 ))
             } else {
                 Ok(Self::Char(char))

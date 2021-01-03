@@ -1,4 +1,4 @@
-error: Identifies cannot start nor consist only of integers with integers
+error: Identifiers cannot start nor consist only of integers with integers
  --> $DIR/int_only_ident.rs:1:41
   |
 1 | concat_idents::concat_idents!(fn_name = 1 {
