@@ -2,20 +2,15 @@
 name = "concat-idents"
 version = "1.1.1"
 authors = ["Dzenan Jupic <info@dzenanjupic.de>"]
-license = "MIT"
+license = "MIT OR Apache-2.0"
 description = "Allows concatenating multiple identifiers and using them everywhere"
+keywords = ["concat", "idents", "concatenate", "combine", "names"]
 repository = "https://github.com/DzenanJupic/concat-idents"
 readme = "README.md"
 edition = "2018"
+documentation = "https://docs.rs/concat-idents"
 include = [
-    "src/*.rs",
-    "tests/*.rs",
-    "tests/*.stderr",
-    "tests/fail/*.rs",
-    "tests/fail/*.stderr",
-    "Cargo.toml",
-    "README.md",
-    "LICENSE"
+    "src/*.rs", "Cargo.toml",
 ]
 
 [lib]
