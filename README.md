@@ -1,8 +1,8 @@
 # concat-idents!
 
-![crates.io](https://img.shields.io/crates/v/concat-idents)
-![docs.rs](https://docs.rs/concat-idents/badge.svg)
-![licence](https://img.shields.io/crates/l/concat-idents)
+[![crates.io](https://img.shields.io/crates/v/concat-idents)](https://crates.io/crates/concat-idents)
+[![docs.rs](https://docs.rs/concat-idents/badge.svg)](https://docs.rs/concat-idents/)
+[![licence](https://img.shields.io/crates/l/concat-idents)](https://github.com/DzenanJupic/concat-idents)
 
 This crate provides a single, easy to use macro.
 
