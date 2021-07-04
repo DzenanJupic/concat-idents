@@ -13,20 +13,20 @@ This crate provides a single, easy to use macro.
  ```rust
  use concat_idents::concat_idents;
 
- concat_idents!(fn_name = foo, _, bar {
+ concat_idents!(fn_name = foo_, _, bar {
         fn fn_name() {
             // --snip--
         }
  });
 
- foo_bar();
+ foo__bar();
  ```
 
 ### Allowed identifier parts
 
 ```rust
-concat_idents!(fn_name = _, _ { /* underscores */ });
-concat_idents!(fn_name = foo, bar { /* identifiers */ });
+concat_idents!(fn_name = _, __ { /* underscores */ });
+concat_idents!(fn_name = foo, _bar { /* identifiers */ });
 concat_idents!(fn_name = "foo", "bar" { /* strings */ });
 concat_idents!(fn_name = 'f', 'o', 'o' { /* characters */ });
 concat_idents!(fn_name = foo, 1, bar, 2 { /* integers */ });

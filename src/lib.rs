@@ -241,13 +241,13 @@ impl VisitMut for IdentReplacer {
 /// ```
 /// use concat_idents::concat_idents;
 ///
-/// concat_idents!(fn_name = foo, _, bar {
+/// concat_idents!(fn_name = foo_, _, bar {
 ///        fn fn_name() {
 ///            // --snip--
 ///        }
 /// });
 ///
-/// foo_bar();
+/// foo__bar();
 /// ```
 ///
 /// ### Generating Tests
