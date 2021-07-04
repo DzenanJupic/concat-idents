@@ -71,6 +71,18 @@ concat_idents!(fn_name = _works_, r#while, '_', 1, stuff_, is, _, "mixed",   {
     }
 });
 
+macro_rules! nested {
+    () => {
+        concat_idents!(fn_name = outer {
+            concat_idents!(something = inner {
+                
+            });
+        });
+    };
+}
+
+nested!();
+
 
 macro_rules! create_test {
     ($ident1:ident, $ident2:ident) => {
