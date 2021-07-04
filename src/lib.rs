@@ -1,3 +1,6 @@
+//! This crates provides a single, easy to use macro, that allows you to actually use concatenated
+//! identifiers in Rust.
+
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
