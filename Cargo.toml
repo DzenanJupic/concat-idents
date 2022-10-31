@@ -10,7 +10,7 @@ readme = "README.md"
 edition = "2018"
 documentation = "https://docs.rs/concat-idents"
 include = [
-    "src/*.rs", "Cargo.toml",
+    "src/*.rs", "Cargo.toml", "LICENSE-*",
 ]
 
 [lib]
