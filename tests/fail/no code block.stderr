@@ -1,5 +1,5 @@
 error: unexpected end of input, expected curly braces
- --> tests/fail/no code block.rs:1:1
+ --> $DIR/no code block.rs:1:1
   |
 1 | / concat_idents::concat_idents!(fn_name = no_code
 2 | |     /* there must be a code block */
