@@ -4,7 +4,7 @@ error: expected identifier, found keyword `struct`
 1 | concat_idents::concat_idents!(fn_name = "struct" {
   |                                         ^^^^^^^^ expected identifier, found keyword
   |
-help: you can escape reserved keywords to use them as identifiers
+help: escape `struct` to use it as an identifier
   |
-1 | concat_idents::concat_idents!(fn_name = r#struct {
-  |                                         ^^^^^^^^
+1 | concat_idents::concat_idents!(fn_name = r#"struct" {
+  |                                         ++
